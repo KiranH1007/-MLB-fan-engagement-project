@@ -46,16 +46,74 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
+import com.google.gson.Gson
+import kotlinx.coroutines.*
+import java.net.HttpURLConnection
+import java.net.URL
+
+
 data class ImageData(val imageUrl: String)
 data class Post(val title: String, val content: String)
 
+
+fun getRecommendations(userId: String, callback: (List<String>?, String?) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val urlString = "https://us-central1-mlbfanengagementapp.cloudfunctions.net/recommend_content_cloud_function1?user_id=$userId" // Replace with your actual API endpoint
+            val url = URL(urlString)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+
+            val inputStream = connection.inputStream
+            val response = inputStream.bufferedReader().use { it.readText() }
+
+            val gson = Gson()
+            val recommendationResponse = gson.fromJson(response, RecommendationResponse::class.java) // Use your data class
+
+            if (recommendationResponse != null && recommendationResponse.recommendations != null) {
+                callback(recommendationResponse.recommendations, null) // Success! Pass the list of strings.
+            } else {
+                callback(null, "Error parsing JSON or no recommendations found")
+            }
+
+            connection.disconnect()
+
+        } catch (e: Exception) {
+            callback(null, e.message) // Handle exceptions
+        }
+    }
+}
+
+data class RecommendationResponse(val recommendations: List<String>?, val error: String?) // Data class
+
 @Composable
 fun MainScreen(navController: NavController) {
+    val context = LocalContext.current
+    var error by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    var testRecommendations by remember { mutableStateOf(emptyList<String?>()) } // State for test recommendations
+
+    LaunchedEffect(Unit) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "6BQHSRCYU54WTOX" // Get current user ID or use test ID
+
+        getRecommendations(userId) { recommendations, err -> // Your existing API call
+            if (err != null) {
+                error = err
+                Toast.makeText(context, "Error: $err", Toast.LENGTH_SHORT).show()
+            } else if (recommendations != null) {
+                testRecommendations = recommendations // Store the API results in testRecommendations
+            } else {
+                error = "No recommendations"
+                Toast.makeText(context, "No recommendations received", Toast.LENGTH_SHORT).show()
+            }
+            isLoading = false
+        }
+    }
+
     Scaffold(
         topBar = { HomeAppBar() },
-        bottomBar = { BottomNavigationBar() })
-    {
-        paddingValues ->
+        bottomBar = { BottomNavigationBar() }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -64,58 +122,31 @@ fun MainScreen(navController: NavController) {
         ) {
             Text(text = "Recommended Posts", style = MaterialTheme.typography.titleSmall)
 
-            val images = listOf(
-                ImageData("https://unsplash.com/photos/a-bunch-of-baseballs-that-are-white-and-red-2A6FVXOiJ1w"),
-                ImageData("https://unsplash.com/photos/a-bunch-of-baseballs-that-are-white-and-red-2A6FVXOiJ1w"),
-                ImageData("https://unsplash.com/photos/a-bunch-of-baseballs-that-are-white-and-red-2A6FVXOiJ1w")
-            )
-
-            var recommendedPosts by remember { mutableStateOf(emptyList<Post>()) }
-            var error by remember { mutableStateOf<String?>(null) }
-
-            LaunchedEffect(Unit) {
-                try {
-                    // Replace with your actual data fetching logic
-                    //delay(1000) // Simulate network delay
-                    recommendedPosts = generateRandomPosts(5)
-                } catch (e: Exception) {
-                    error = "An error occurred"
-                }
-            }
-
-            if (error != null) {
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            } else if (error != null) {
                 Text(text = error!!, color = Color.Red)
-            } else
-            {
-                if (recommendedPosts.isEmpty()) {
-                    Text(text = "No recommended posts available")
-                } else {
-                    Column {
-                        recommendedPosts.forEach { post ->
-                            Card(
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .fillMaxWidth()
-                            ) {
-                                Text(text = post.title)
-                                Text(text = post.content)
+            } else if (testRecommendations.isEmpty()) { // Check testRecommendations for empty state
+                Text(text = "No recommendations available")
+            } else {
+                Column {
+                    testRecommendations.forEach { post -> // Iterate through testRecommendations
+                        Card(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Column(Modifier.padding(16.dp)) {
+                                Text(text = post ?: "", style = MaterialTheme.typography.bodyMedium) // Handle null posts
+                                // Keep it simple - No HomeMainContent or anything else here
                             }
-                            HomeMainContent()
                         }
                     }
                 }
             }
         }
-
-//            LazyVerticalGrid(
-//                columns = GridCells.Fixed(5)
-//            ) {
-//                items(items = images) { imageData ->
-//                    ImageCard(imageUrl = imageData.imageUrl) // Access image URL from ImageData
-//                }
-//            }
-        }
     }
+}
 
 
 // Function to generate random posts with long content
