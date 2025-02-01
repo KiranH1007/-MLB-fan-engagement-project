@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1053801751760",
+    "project_id": "mlb-fan-engagement-c2cf5",
+    "storage_bucket": "mlb-fan-engagement-c2cf5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1053801751760:android:15e580f6bf58d56cd66ad5",
+        "android_client_info": {
+          "package_name": "com.example.fanengagementapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhlJaD_ePFbzmb0ahCpsMOLNIC6bTR390"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
