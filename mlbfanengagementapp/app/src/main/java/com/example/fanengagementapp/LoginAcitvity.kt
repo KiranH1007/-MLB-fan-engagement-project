@@ -72,8 +72,8 @@ fun Navigation() {
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
-    var email by remember { mutableStateOf("narikhire1007@gmail.com") }
-    var password by remember { mutableStateOf("Narik@1") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     Column(
