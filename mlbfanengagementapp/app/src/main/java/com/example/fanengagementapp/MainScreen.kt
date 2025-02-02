@@ -1,5 +1,6 @@
 package com.example.fanengagementapp.ui
 
+import android.content.Intent
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -13,58 +14,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-
 import android.widget.Toast
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
-
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import coil3.compose.AsyncImage
-
 import com.example.fanengagementapp.R
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-
 import com.google.gson.Gson
-import kotlinx.coroutines.*
+import kotlinx.coroutines.tasks.await
 import java.net.HttpURLConnection
 import java.net.URL
 
-
-data class ImageData(val imageUrl: String)
-
-
-@Composable
-fun MyApp() {
-    val navController = rememberNavController()  // Create NavController HERE
-
-    // Use the navController in your app's structure
-    MainScreen(navController) // Pass it to MainScreen
-}
-
 data class RecommendationResponse(val recommendations: List<String>?, val error: String?) // Data class
 
+var username = ""
 
 @Composable
 fun MainScreen(navController: NavController) {
@@ -73,10 +46,24 @@ fun MainScreen(navController: NavController) {
     var isLoading by remember { mutableStateOf(true) }
     var testRecommendations by remember { mutableStateOf(emptyList<String?>()) }
 
-    LaunchedEffect(Unit) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "6BQHSRCYU54WTOX"
+    var showAddPostDialog by remember { mutableStateOf(false) } // State for dialog visibility
 
-        getRecommendations(userId) { recommendations, err ->
+    //var username by remember { mutableStateOf("") }
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    val db = FirebaseFirestore.getInstance()
+
+    LaunchedEffect(Unit) {
+        
+        val userDoc = db.collection("users").document(currentUser?.uid?: "6BQHSRCYU54WTOX").get().await()
+
+        if (userDoc.exists()) {
+            username = userDoc.getString("username") ?: "" // Get username
+        } else {
+            error = "User document not found"
+        }
+
+        getRecommendations(username) { recommendations, err ->
             if (err != null) {
                 error = err
                 Toast.makeText(context, "Error: $err", Toast.LENGTH_SHORT).show()
@@ -92,7 +79,7 @@ fun MainScreen(navController: NavController) {
 
     Scaffold(
         topBar = { HomeAppBar(navController) },
-        bottomBar = { BottomNavigationBar() }
+        bottomBar = { BottomNavigationBar(navController,onAddPostClick = { showAddPostDialog = true }) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -100,7 +87,7 @@ fun MainScreen(navController: NavController) {
                 .fillMaxSize()
         ) {
             item {
-                Text(text = "Recommended Posts", style = MaterialTheme.typography.titleSmall)
+                Text(text = "Recommended Posts", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.padding(16.dp))
             }
 
             if (isLoading) {
@@ -118,6 +105,14 @@ fun MainScreen(navController: NavController) {
                     PostItem(post = post)
                 }
             }
+        }
+    }
+    // Add Post Dialog
+    if (showAddPostDialog) {
+        AddPostDialog(onDismissRequest = { showAddPostDialog = false }) { newPostContent ->
+            // In this simplified version, just print the content
+            println("New Post Content: $newPostContent")
+            showAddPostDialog = false // Close the dialog
         }
     }
 }
@@ -192,8 +187,8 @@ fun HomeAppBar(navController: NavController) {
                             .size(100.dp)
                             .clip(CircleShape)
                     )
-                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "6BQHSRCYU54WTOX"
-                    Text("Username: $userId") // Replace with dynamic data later
+
+                    Text("Username: $username") // Replace with dynamic data later
                     Text("Favorite Teams: Team A, Team B") // Replace with dynamic data
                     Text("Followed Players: Player X, Player Y") // Replace with dynamic data
                 }
@@ -208,7 +203,7 @@ fun HomeAppBar(navController: NavController) {
 }
 
 @Composable
-fun BottomNavigationBar() {
+fun BottomNavigationBar(navController: NavController,onAddPostClick: () -> Unit) {
     // Create a bottom app bar
     BottomAppBar {
         // Create a row to hold the icons
@@ -228,7 +223,7 @@ fun BottomNavigationBar() {
                 }
             }
             // Create an icon button for search
-            IconButton(onClick = { // TODO open search with all posts
+            IconButton(onClick =  { navController.navigate("search_screen")// TODO open search with all posts
             }) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
@@ -239,8 +234,7 @@ fun BottomNavigationBar() {
                 }
             }
             // Create an icon button for add post
-            IconButton(onClick = { // TODO open add post from gallery
-            }) {
+            IconButton(onClick = onAddPostClick) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         painter = painterResource(R.drawable.add_post),
@@ -250,8 +244,9 @@ fun BottomNavigationBar() {
                 }
             }
             // Create an icon button for favourites
-            IconButton(onClick = { // TODO open favourites with saved posts
-                }) {
+            IconButton(onClick ={ navController.navigate("favorites_screen")// TODO open favourites with saved posts
+                 } )
+                 {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
@@ -269,42 +264,191 @@ fun BottomNavigationBar() {
 }
 
 
+
+// Search Screen
 @Composable
-fun HomeMainContent() {
-    Column(Modifier.fillMaxWidth()) { // Ensure it fills the card's width
+fun SearchScreen() {
+    var searchText by remember { mutableStateOf("") }
+    var searchResults by remember { mutableStateOf(emptyList<String>()) } // Placeholder data
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        OutlinedTextField(
+            value = searchText,
+            onValueChange = { searchText = it },
+            label = { Text("Search") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Button(onClick = {
+            // Perform search logic here (e.g., API call, filtering)
+            // For prototype, just filter the placeholder data
+            searchResults = listOf("Result 1", "Result 2", "Result 3").filter { it.contains(searchText, true) }
+        }, modifier = Modifier.padding(8.dp)) {
+            Text("Search")
+        }
+
+        LazyColumn {
+            items(searchResults) { result ->
+                Text(result, modifier = Modifier.padding(4.dp))
+            }
+        }
+    }
+}
+
+
+// Favorites Screen
+@Composable
+fun FavoritesScreen() {
+    // Placeholder data for favorite posts
+    val favoritePosts = remember { mutableStateOf(listOf("Favorite Post 1", "Favorite Post 2")) }
+
+    LazyColumn(modifier = Modifier.padding(16.dp)) {
+        item {
+            Text("Favorite Posts", style = MaterialTheme.typography.headlineSmall)
+        }
+        items(favoritePosts.value) { post ->
+            PostItem(post) // Reuse PostItem
+        }
+    }
+}
+
+@Composable
+fun AddPostDialog(onDismissRequest: () -> Unit, onPostAdded: (String) -> Unit) {
+    var postContent by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Create Post") },
+        text = {
+            OutlinedTextField(
+                value = postContent,
+                onValueChange = { postContent = it },
+                label = { Text("What's on your mind?") }
+            )
+        },
+        confirmButton = {
+            Button(onClick = {
+                onPostAdded(postContent)
+            }) {
+                Text("Post")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismissRequest) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun HomeMainContent(post: String) {
+    var isLiked by remember { mutableStateOf(false) }
+    var isShared by remember { mutableStateOf(false) }
+    var isSaved by remember { mutableStateOf(false) }
+    var showCommentSection by remember { mutableStateOf(false) }
+    var newComment by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    Column(Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row {
-                IconButton(onClick = { /* TODO: Handle Like */ }) {
-                    Icon(painterResource(R.drawable.like), contentDescription = "Like Icon", modifier = Modifier.size(20.dp))
+                IconButton(onClick = {
+                    isLiked = !isLiked
+                    if (isLiked) {
+                        Toast.makeText(context, "Liked", Toast.LENGTH_SHORT).show()
+                    }
+                }) {
+                    Icon(
+                        painterResource(if (isLiked) R.drawable.like_filled else R.drawable.like),
+                        contentDescription = "Like Icon",
+                        modifier = Modifier.size(20.dp),
+                        tint = if (isLiked) Color.Blue else Color.Black
+                    )
                 }
 
-                IconButton(onClick = { /* TODO: Handle Comment */ }) {
-                    Icon(painterResource(R.drawable.comment), contentDescription = "Comment Icon", modifier = Modifier.size(20.dp))
+                IconButton(onClick = {
+                    isShared = !isShared
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, "Check out this post: $post")
+                    }
+                    context.startActivity(Intent.createChooser(shareIntent, "Share Post"))
+                }) {
+                    Icon(
+                        painterResource(R.drawable.share),
+                        contentDescription = "Share Icon",
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
 
-                IconButton(onClick = { /* TODO: Handle Share */ }) {
-                    Icon(painterResource(R.drawable.share), contentDescription = "Share Icon", modifier = Modifier.size(20.dp))
+                IconButton(onClick = { showCommentSection = true }) {
+                    Icon(
+                        painterResource(R.drawable.comment),
+                        contentDescription = "Comment Icon",
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
 
-            IconButton(onClick = { /* TODO: Handle Save */ }) {
-                Icon(painterResource(R.drawable.save_icon), contentDescription = "Save Icon", modifier = Modifier.size(20.dp))
+            IconButton(onClick = {
+                isSaved = !isSaved
+                if(isSaved) {
+                    Toast.makeText(context, "Added to favourites", Toast.LENGTH_SHORT).show()
+                }
+                }) {
+                Icon(
+                    painterResource(if (isSaved) R.drawable.save_icon_filled else R.drawable.save_icon),
+                    contentDescription = "Save Icon",
+                    modifier = Modifier.size(20.dp),
+                    tint = if (isSaved) Color.Red else Color.Black
+                )
             }
         }
 
-        // Example data (replace with your actual data)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp, top = 1.dp, bottom = 4.dp)
-        ) {
-            Text("2993 likes", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-            Text("view all 138 comments", fontWeight = FontWeight.Thin, fontSize = 13.sp)
-            Text("9 minutes ago", fontWeight = FontWeight.Thin, fontSize = 13.sp)
+        if (showCommentSection) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .background(Color.LightGray)
+            ) {
+                OutlinedTextField(
+                    value = newComment,
+                    onValueChange = { newComment = it },
+                    label = { Text("Add your comment") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+
+                    Button(onClick = {
+                        if (newComment.isNotBlank()) {
+                            println("New comment: $newComment") // Replace with actual save logic
+                            newComment = ""
+                            showCommentSection = false
+                            Toast.makeText(context, "Comment Posted", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Please write a comment", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }, modifier = Modifier.padding(8.dp)) {
+                        Text("Post the Comment")
+                    }
+                    Button(onClick = {
+                        showCommentSection = false
+                        newComment = ""
+                    }, modifier = Modifier.padding(8.dp)) {
+                        Text("Cancel")
+                    }
+                }
+            }
         }
     }
 }
@@ -312,7 +456,9 @@ fun HomeMainContent() {
 fun getRecommendations(userId: String, callback: (List<String>?, String?) -> Unit) {
     CoroutineScope(Dispatchers.IO).launch {
         try {
-            val urlString = "https://5a242042-2b8c-43d0-92ca-2bf8a2788bb7.mock.pstmn.io/user_id" //"https://us-central1-mlbfanengagementapp.cloudfunctions.net/recommend_content_cloud_function1?user_id=$userId" // Replace with your actual API endpoint
+            // Postman url for testing purposes
+            //val urlString = "https://5a242042-2b8c-43d0-92ca-2bf8a2788bb7.mock.pstmn.io/user_id"
+            val urlString = "https://us-central1-mlbfanengagementapp.cloudfunctions.net/recommend_content_cloud_function1?user_id=$userId"
             val url = URL(urlString)
             val connection = url.openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
@@ -346,22 +492,23 @@ fun PostItem(post: String?) {
             .fillMaxWidth()
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text(text = post ?: "", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = post ?: "",
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp) // Bold and larger
+            )
 
-            // Placeholder for Video/Article
+            // Placeholder for Video/Article (remains the same)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp) // Set a desired height for the placeholder
-                    .background(Color.LightGray) // Optional: Add a background color
+                    .height(200.dp)
+                    .background(Color.LightGray)
             ) {
-                // You can add placeholder content here if needed, e.g., an icon or text
-                // Example:
-                // Icon(painterResource(id = R.drawable.ic_placeholder), contentDescription = "Placeholder")
+                Icon(painterResource(id = R.drawable.video), contentDescription = "Placeholder")
                 Text("Video/Article Placeholder", modifier = Modifier.align(Alignment.Center))
             }
 
-            HomeMainContent() // Reactions for each post
+            HomeMainContent(post = post ?: "") // Reactions (remains the same)
         }
     }
 }
