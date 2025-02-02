@@ -68,15 +68,24 @@ MLB Fan Connect is a mobile application designed to enhance the baseball fan exp
 *   **Enhanced Profile Features:** 
     *   Allow users to update their profile information (favorite teams, followed players).
     *   Integrate profile picture uploads with Cloud Storage.
-*   **Content Creation:** Allow users to create and share their own posts.
+*   **Content Creation:** Allow users to create and share their own creative posts.
 *   **Improved UI/UX:** 
     *   Enhance the overall user experience with better animations and visual design.
     *   Implement accessibility features.
 
-**Screenshots**
+## Demonstration Video
 
-*   [Include screenshots of the Login Screen, Main Screen, and other key screens of your application here]
+[![MLB Fan Connect Demo](http://img.youtube.com/vi/<your-video-id>/0.jpg)](http://www.youtube.com/watch?v=<your-video-id>)
 
-**Note:** This README provides a high-level overview of the project. More detailed documentation, including code comments, design documents, and testing reports, should be maintained within the project repository.
+**Note:** This video demonstrates a prototype of the MLB Fan Connect application. The application is currently under development and has not been published on the Google Play Store. 
 
-I hope this updated README effectively reflects the development of your MLB Fan Connect application!
+**To run the application:**
+
+1. Download the APK file from [link to APK file download (if applicable)].
+2. Enable "Unknown Sources" in your device's settings (under "Security" or "Privacy").
+3. Locate and install the downloaded APK file.
+
+## Limitations
+
+* The profile section currently only displays the username. Functionality for adding favorite teams and followed players will be implemented in the future.
+* The recommendation system is currently based on a static dataset. Real-time data integration and updates will be explored in future versions.

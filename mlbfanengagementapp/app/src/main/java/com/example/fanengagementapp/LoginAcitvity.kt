@@ -83,7 +83,7 @@ fun LoginScreen(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "MLB Fan Hub", color = Color.Black, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+        Text(text = "MLB Fan Connect", color = Color.Black, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
         Spacer(modifier = Modifier.height(16.dp))
 
         TextField(
