@@ -81,7 +81,8 @@ MLB Fan Connect is a mobile application designed to enhance the baseball fan exp
 
 **To run the application:**
 
-1. Download the APK file from [link to APK file download (if applicable)].
+1. Download the APK file from [https://github.com/KiranH1007/-MLB-fan-engagement-project/releases/download/v1.0.0/mlbfanconnect.apk].
+
 2. Enable "Unknown Sources" in your device's settings (under "Security" or "Privacy").
 3. Locate and install the downloaded APK file.
 
