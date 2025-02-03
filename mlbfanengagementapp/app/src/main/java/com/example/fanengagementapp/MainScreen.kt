@@ -129,7 +129,7 @@ fun HomeAppBar(navController: NavController) {
     TopAppBar(
         title = {
             Text(
-                "MLB Fan Hub",
+                "MLB Fan Connect",
                 fontFamily = FontFamily.Cursive,
                 fontWeight = FontWeight.Bold,
                 fontSize = 25.sp
@@ -623,7 +623,7 @@ isLoading = false
 TopAppBar(
 title = {
 Text(
-"MLB Fan Hub",
+"MLB Fan Connect",
 fontFamily = FontFamily.Cursive,
 fontWeight = FontWeight.Bold,
 fontSize = 25.sp

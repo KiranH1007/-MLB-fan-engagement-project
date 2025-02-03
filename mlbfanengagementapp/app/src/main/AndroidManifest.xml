@@ -11,14 +11,14 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="MLB Fan Engagement"
+        android:label="MLB Fan Connect"
         android:supportsRtl="true"
         android:theme="@style/Theme.Fanengagementapp"
         tools:targetApi="31">
         <activity
             android:name=".LoginAcitvity"
             android:exported="true"
-            android:label="MLB Fan Engagement"
+            android:label="MLB Fan Connect"
             android:theme="@style/Theme.Fanengagementapp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

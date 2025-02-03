@@ -72,8 +72,8 @@ fun Navigation() {
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
-    var email by remember { mutableStateOf("narikhire1007@gmail.com") }
-    var password by remember { mutableStateOf("Narik@1") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     Column(
@@ -83,7 +83,7 @@ fun LoginScreen(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "MLB Fan Hub", color = Color.Black, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+        Text(text = "MLB Fan Connect", color = Color.Black, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
         Spacer(modifier = Modifier.height(16.dp))
 
         TextField(

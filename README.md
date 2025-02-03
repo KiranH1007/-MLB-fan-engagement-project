@@ -1,47 +1,92 @@
 # MLB Fan Connect
 
-MLB Fan Connect is an innovative engagement platform designed to revolutionize the baseball fan experience using Google Cloud's AI and data tools. It combines real-time insights, personalized content, and interactive features to connect fans with their favorite teams and players during live games.
+**Author & Maintainer:** [Kiran Hiremath]
 
-## Features and Functionality
+**Overview**
 
-### Live Game Sentiment Analysis
+MLB Fan Connect is a mobile application designed to enhance the baseball fan experience. It leverages Google Cloud technologies to provide personalized content recommendations, real-time sentiment analysis (planned), and interactive features.
 
-- Uses real-time social media data (e.g., Twitter) to gauge fan sentiment during live MLB games.
-- Sentiment analysis is powered by a Vertex AI model trained on historical baseball-related tweets.
-- Fans receive updates about collective sentiment, like excitement during critical plays or frustration during game delays.
+**Development Process**
 
-### Personalized Player Stats
+*   **Colaboratory (Colab):** 
+    *   The core recommendation logic was initially developed and tested in Google Colaboratory. 
+    *   Colab provided a convenient environment for data exploration, model experimentation, and rapid prototyping. 
+    *   Key steps in Colab included:
+        *   Loading and preprocessing datasets from Google Cloud Storage. 
+        *   Creating data structures like `user_player_mapping` and `player_content_mapping`.
+        *   Implementing the recommendation algorithm based on user preferences and content popularity.
+        *   Testing and refining the recommendation logic.
 
-- Displays tailored player performance stats (e.g., hits, pitching metrics) based on fan preferences.
-- Fans can view individual player stats, compare performances, or access historical data.
-- All data is stored and queried using Google BigQuery for quick insights.
+*   **Android Studio:**
+    *   The application was built using Android Studio with Kotlin as the primary language. 
+    *   Key features implemented in Android Studio include:
+        *   User authentication with Firebase Authentication.
+        *   User interface (UI) design using Jetpack Compose for a modern and responsive experience.
+        *   Navigation between screens (Login, Signup, Main, Search, Favorites).
+        *   Integration of the Cloud Function for real-time content recommendations.
+        *   Implementation of user interactions like liking, commenting, and sharing.
+        *   Basic profile functionality (displaying username, placeholder for favorite teams and followed players).
 
-### Interactive Fan Polls
+**Key Technologies**
 
-- Offers live polls during games to engage fans with questions like “Who will score the next home run?” or “Rate this game experience.”
-- Real-time poll results are updated dynamically using Google Firestore and displayed on the app.
+*   **Google Cloud:**
+    *   **Cloud Functions:** Serverless execution environment for the recommendation system.
+    *   **Cloud Storage:** Stores datasets and model artifacts.
+    *   **Colaboratory (Colab):** Used for initial development, testing, and data exploration.
+    *   **Firebase:** Authentication, Firestore for user data storage.
+*   **Android:** 
+    *   **Android Studio:** Integrated Development Environment (IDE).
+    *   **Kotlin:** Programming language.
+    *   **Jetpack Compose:** UI toolkit.
+*   **Libraries:**
+    *   **Python:** For data processing and recommendation logic in Colab.
+    *   **Firebase SDKs:** For authentication and database interaction.
+    *   **Gson:** For JSON parsing in the Cloud Function.
+    *   **Other relevant Android libraries:** For UI components, networking, etc.
 
-## Technologies Used
+**Data Sources**
 
-### Google Cloud Tools
+*   The initial dataset for content recommendations was obtained from [https://github.com/MajorLeagueBaseball/google-cloud-mlb-hackathon](https://github.com/MajorLeagueBaseball/google-cloud-mlb-hackathon). 
 
-- **Vertex AI**: Model training and deployment for real-time sentiment analysis.
-- **BigQuery**: Storing and querying player stats and game-related data.
-- **Firestore**: Managing live poll questions and results in real-time.
-- **Cloud Functions**: Hosting backend APIs for sentiment analysis and player stats queries.
+**Current Features**
 
-### Additional Libraries
+*   User registration and login with Firebase Authentication.
+*   Basic user profile with username (placeholder for more details).
+*   Content recommendation system powered by a Cloud Function.
+*   Simple UI with basic navigation between screens.
+*   Placeholder UI for post interactions (like, comment, share, save).
+*   **Testing:**  
+      * No extensive testing has been conducted yet. However, unit testing, UI testing, integration testing, and manual testing are planned for future development phases.
 
-- **Python Libraries**: pandas, scikit-learn, and Tweepy for data processing and social media integration.
-- **Frontend**: React.js for building a responsive and engaging user interface.
+**Future Enhancements**
 
-### Other Data Sources
+*   **Real-time Sentiment Analysis:** Integrate Vertex AI models for real-time sentiment analysis of social media data during live games.
+*   **Interactive Features:** 
+    *   Implement live polls and Q&A sessions using Firestore and Cloud Functions.
+    *   Enable users to create and join fan groups.
+*   **Personalized Player Stats:** Implement personalized player statistics dashboards using BigQuery for data storage and analysis.
+*   **Enhanced Profile Features:** 
+    *   Allow users to update their profile information (favorite teams, followed players).
+    *   Integrate profile picture uploads with Cloud Storage.
+*   **Content Creation:** Allow users to create and share their own creative posts.
+*   **Improved UI/UX:** 
+    *   Enhance the overall user experience with better animations and visual design.
+    *   Implement accessibility features.
 
-- **MLB-provided datasets**: Player stats and game data.
-- **Public datasets**: Supplementary data for training and enriching the experience.
+## Demonstration Video
 
-## Findings and Learnings
+[![MLB Fan Connect Demo](http://img.youtube.com/vi/<your-video-id>/0.jpg)](http://www.youtube.com/watch?v=<your-video-id>)
 
-- **Seamless Integration**: Google Cloud tools, particularly Vertex AI and BigQuery, provided seamless integration for real-time analytics and model deployment.
-- **Optimizing Real-Time Pipelines**: Fetching and analyzing social media data live required careful pipeline optimization for speed and accuracy.
-- **User Engagement Insights**: Real-time polls and personalized stats significantly enhance fan engagement, creating a more interactive game-watching experience.
+**Note:** This video demonstrates a prototype of the MLB Fan Connect application. The application is currently under development and has not been published on the Google Play Store. 
+
+**To run the application:**
+
+1. Download the APK file from [https://github.com/KiranH1007/-MLB-fan-engagement-project/releases/download/v1.0.0/mlbfanconnect.apk].
+
+2. Enable "Unknown Sources" in your device's settings (under "Security" or "Privacy").
+3. Locate and install the downloaded APK file.
+
+## Limitations
+
+* The profile section currently only displays the username. Functionality for adding favorite teams and followed players will be implemented in the future.
+* The recommendation system is currently based on a static dataset. Real-time data integration and updates will be explored in future versions.
