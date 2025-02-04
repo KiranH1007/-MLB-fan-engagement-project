@@ -75,7 +75,7 @@ MLB Fan Connect is a mobile application designed to enhance the baseball fan exp
 
 ## Demonstration Video
 
-[![MLB Fan Connect Demo](https://youtu.be/mAoGGpBMq9g)]
+[![MLB Fan Connect Demo](https://img.youtube.com/vi/mAoGGpBMq9g/0.jpg)](https://youtu.be/mAoGGpBMq9g)
 
 **Note:** This video demonstrates a prototype of the MLB Fan Connect application. The application is currently under development and has not been published on the Google Play Store. 
 
